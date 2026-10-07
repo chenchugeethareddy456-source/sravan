@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Geeta Boutique — Admin</title>
+<style>
+  body{font-family:system-ui,sans-serif; background:#F7F5F0; margin:0; padding:24px; color:#22201D;}
+  h1{font-size:22px; margin-bottom:4px;}
+  .sub{color:#8A7A68; font-size:14px; margin-bottom:24px;}
+  .login-box{max-width:360px; margin:60px auto; background:#fff; padding:28px; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,0.08);}
+  .login-box input{width:100%; padding:10px; margin:10px 0; border:1px solid #ddd; border-radius:6px; box-sizing:border-box;}
+  .login-box button, .toolbar button{background:#22201D; color:#fff; border:none; padding:10px 18px; border-radius:6px; cursor:pointer; font-size:14px;}
+  .toolbar{display:flex; gap:12px; margin-bottom:16px; align-items:center;}
+  .toolbar input{flex:1; padding:9px 12px; border:1px solid #ddd; border-radius:6px;}
+  table{width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden;}
+  th,td{text-align:left; padding:12px 14px; border-bottom:1px solid #eee; font-size:14px;}
+  th{background:#EDE7DB; font-weight:600;}
+  tr:hover{background:#FAF8F3;}
+  .error{color:#b00020; margin-top:10px; font-size:14px;}
+  .count{color:#8A7A68; font-size:13px; margin-bottom:10px;}
+  #app{display:none;}
+</style>
+</head>
+<body>
+
+<div class="login-box" id="loginBox">
+  <h1>Admin Login</h1>
+  <div class="sub">Enter your admin key to view leads</div>
+  <input type="password" id="adminKeyInput" placeholder="Admin key">
+  <button onclick="login()">View Leads</button>
+  <div class="error" id="loginError"></div>
+</div>
+
+<div id="app">
+  <h1>Geeta Boutique — Leads</h1>
+  <div class="sub">Everyone who submitted the contact form on your site</div>
+  <div class="toolbar">
+    <input id="search" placeholder="Search by name, email or mobile..." oninput="render()">
+    <button onclick="loadLeads()">Refresh</button>
+  </div>
+  <div class="count" id="count"></div>
+  <table>
+    <thead>
+      <tr><th>Name</th><th>Email</th><th>Mobile</th><th>Details</th><th>Date</th></tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+</div>
+
+<script>
+  // ⚠️ Replace this with your real API Gateway URL (ends in /leads)
+  const API_URL = "https://hanki6lotgjtp236dspektjh6e0mgnoi.lambda-url.eu-north-1.on.aws/";
+
+  let adminKey = "";
+  let allLeads = [];
+
+  function login(){
+    adminKey = document.getElementById('adminKeyInput').value.trim();
+    if(!adminKey){ return; }
+    loadLeads();
+  }
+
+  async function loadLeads(){
+    document.getElementById('loginError').textContent = "";
+    try{
+      const res = await fetch(API_URL, { headers: { "x-admin-key": adminKey } });
+      if(res.status === 401){
+        document.getElementById('loginError').textContent = "Wrong admin key.";
+        return;
+      }
+      const data = await res.json();
+      allLeads = data.leads || [];
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      render();
+    }catch(e){
+      document.getElementById('loginError').textContent = "Could not reach the server.";
+    }
+  }
+
+  function render(){
+    const q = document.getElementById('search').value.toLowerCase();
+    const filtered = allLeads.filter(l =>
+      (l.name||'').toLowerCase().includes(q) ||
+      (l.email||'').toLowerCase().includes(q) ||
+      (l.mobile||'').toLowerCase().includes(q)
+    );
+    document.getElementById('count').textContent = filtered.length + " lead(s)";
+    document.getElementById('rows').innerHTML = filtered.map(l => `
+      <tr>
+        <td>${escapeHtml(l.name)}</td>
+        <td>${escapeHtml(l.email)}</td>
+        <td>${escapeHtml(l.mobile)}</td>
+        <td>${escapeHtml(l.details||'')}</td>
+        <td>${new Date(l.createdAt).toLocaleString()}</td>
+      </tr>
+    `).join('');
+  }
+
+  function escapeHtml(s){
+    return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+</script>
+
+</body>
+</html>

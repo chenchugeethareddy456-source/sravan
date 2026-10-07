@@ -150,6 +150,48 @@
   </form>
 </section>
 
+<section id="get-in-touch">
+  <h2 style="font-size:36px; margin-bottom:28px;">Get in touch</h2>
+  <form id="leadForm" style="display:grid; gap:16px; max-width:420px;" onsubmit="return submitLead(event)">
+    <input type="text" id="leadName" placeholder="Your name" required style="padding:12px 14px; border:1px solid var(--line); background:transparent; font-family:inherit; font-size:15px;">
+    <input type="email" id="leadEmail" placeholder="Your email" required style="padding:12px 14px; border:1px solid var(--line); background:transparent; font-family:inherit; font-size:15px;">
+    <input type="tel" id="leadMobile" placeholder="Your mobile number" required style="padding:12px 14px; border:1px solid var(--line); background:transparent; font-family:inherit; font-size:15px;">
+    <textarea id="leadDetails" placeholder="What are you looking for? (optional)" rows="3" style="padding:12px 14px; border:1px solid var(--line); background:transparent; font-family:inherit; font-size:15px; resize:vertical;"></textarea>
+    <button type="submit" id="leadSubmitBtn" style="padding:14px 30px; border:1px solid var(--charcoal); background:var(--charcoal); color:var(--ivory); font-size:14px; cursor:pointer; width:fit-content;">Send</button>
+    <div id="leadMsg" style="font-size:14px; color:var(--taupe);"></div>
+  </form>
+</section>
+
+<script>
+  // ⚠️ Replace this with your real API Gateway URL (ends in /leads)
+  const LEADS_API_URL = "https://p7v6igtcvqta7f7ncayvs7wvby0mptqk.lambda-url.eu-north-1.on.aws/";
+
+  async function submitLead(e){
+    e.preventDefault();
+    const btn = document.getElementById('leadSubmitBtn');
+    const msg = document.getElementById('leadMsg');
+    btn.textContent = 'Sending...'; btn.disabled = true;
+    try{
+      const res = await fetch(LEADS_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('leadName').value,
+          email: document.getElementById('leadEmail').value,
+          mobile: document.getElementById('leadMobile').value,
+          details: document.getElementById('leadDetails').value,
+        })
+      });
+      if(!res.ok) throw new Error();
+      document.getElementById('leadForm').reset();
+      msg.textContent = "Thanks! We'll get back to you soon.";
+    }catch(err){
+      msg.textContent = "Something went wrong. Please try WhatsApp instead.";
+    }
+    btn.textContent = 'Send'; btn.disabled = false;
+  }
+</script>
+
 <footer>
   &copy; 2026 Geeta Boutique. All rights reserved. &nbsp;·&nbsp; <span style="color:var(--brass); cursor:pointer;" onclick="navigator.clipboard.writeText('chenchu.geethareddy456@gmail.com').then(()=>{this.textContent='Copied!'; setTimeout(()=>{this.textContent='chenchu.geethareddy456@gmail.com';},2000);})">chenchu.geethareddy456@gmail.com</span>
 </footer>
