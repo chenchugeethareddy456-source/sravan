@@ -38,6 +38,7 @@
   <div class="toolbar">
     <input id="search" placeholder="Search by name, email or mobile..." oninput="render()">
     <button onclick="loadLeads()">Refresh</button>
+    <button onclick="downloadCsv()">Download CSV</button>
   </div>
   <div class="count" id="count"></div>
   <table>
@@ -96,6 +97,18 @@
         <td>${new Date(l.createdAt).toLocaleString()}</td>
       </tr>
     `).join('');
+  }
+
+  function downloadCsv(){
+    const q = (v) => '"' + String(v||'').replace(/"/g,'""') + '"';
+    const lines = ['Name,Email,Mobile,Details,Date'].concat(
+      allLeads.map(l => [l.name,l.email,l.mobile,l.details,l.createdAt].map(q).join(','))
+    );
+    const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'geeta-boutique-leads.csv';
+    a.click();
   }
 
   function escapeHtml(s){
