@@ -174,11 +174,15 @@
           details: document.getElementById('leadDetails').value,
         })
       });
-      if(!res.ok) throw new Error();
+      if(!res.ok){
+        let why = "";
+        try{ const d = await res.json(); why = d.reason || d.error || ""; }catch(e){}
+        throw new Error(why || ("HTTP " + res.status));
+      }
       document.getElementById('leadForm').reset();
       msg.textContent = "Thanks! We'll get back to you soon.";
     }catch(err){
-      msg.textContent = "Something went wrong. Please try WhatsApp instead.";
+      msg.textContent = "Something went wrong (" + (err.message || "network") + "). Please try WhatsApp instead.";
     }
     btn.textContent = 'Send'; btn.disabled = false;
   }
