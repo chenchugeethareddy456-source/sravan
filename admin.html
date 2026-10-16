@@ -71,6 +71,7 @@
         return;
       }
       const data = await res.json();
+      if(!res.ok){ document.getElementById('loginError').textContent = 'Error: ' + (data.reason || data.error || res.status); return; }
       allLeads = data.leads || [];
       document.getElementById('loginBox').style.display = 'none';
       document.getElementById('app').style.display = 'block';
